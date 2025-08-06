@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">axnosistimeshare</string>
+    <string name="title_activity_main">axnosistimeshare</string>
+    <string name="package_name">ionic.axnosistimeshare</string>
+    <string name="custom_url_scheme">ionic.axnosistimeshare</string>
+</resources>

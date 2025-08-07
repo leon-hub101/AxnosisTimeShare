@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -21,7 +21,7 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.page').then(m => m.HomePage)
   },
   {
-    path: 'bookings',
+    path: 'bookings/:id',
     loadComponent: () => import('./bookings/bookings.page').then(m => m.BookingsPage)
   },
   {
@@ -31,6 +31,10 @@ export const routes: Routes = [
   {
     path: 'approvals',
     loadComponent: () => import('./approvals/approvals.page').then(m => m.ApprovalsPage)
+  },
+  {
+    path: 'manage-venues',
+    loadComponent: () => import('./manage-venues/manage-venues.page').then(m => m.ManageVenuesPage)
   }
 ];
 

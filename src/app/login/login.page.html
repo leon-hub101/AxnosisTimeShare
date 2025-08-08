@@ -4,7 +4,6 @@
     <ion-title>Login</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -12,10 +11,23 @@
     </ion-toolbar>
   </ion-header>
   <div id="container">
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <ion-input
+        formControlName="email"
+        type="email"
+        placeholder="Enter email"
+        label="Email"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="loginForm.get('email')!.touched && loginForm.get('email')!.invalid"
+      ></ion-input>
+      <ion-button type="submit" expand="block" [disabled]="loginForm.invalid">Login</ion-button>
+      <ion-button expand="block" (click)="register()">Register</ion-button>
+    </form>
     <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
-    <ion-button expand="block" routerLink="/registration">Go to Registration</ion-button>
     <ion-button expand="block" routerLink="/bookings">Go to Bookings</ion-button>
     <ion-button expand="block" routerLink="/availability">Go to Availability</ion-button>
     <ion-button expand="block" routerLink="/approvals">Go to Approvals</ion-button>
+    <ion-button expand="block" routerLink="/manage-venues">Go to Manage Venues</ion-button>
   </div>
 </ion-content>

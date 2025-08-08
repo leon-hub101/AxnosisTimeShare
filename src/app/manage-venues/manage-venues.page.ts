@@ -19,7 +19,7 @@ export class ManageVenuesPage implements OnInit {
   newVenueName: string = '';
   newVenueLocation: string = '';
   newDates: string = ''; // Comma-separated dates (e.g., "2025-08-12,2025-08-13")
-  private mockAdmin: AdminUser = { id: 'admin1', name: 'Admin', email: 'admin@example.com', role: 'admin' }; // Mock for testing
+  private mockAdmin: AdminUser = { id: 'admin1', name: 'John', surname: 'Doe', email: 'admin@example.com', role: 'admin' }; // Mock for testing
 
   constructor(private timeshareService: TimeshareService) {}
 

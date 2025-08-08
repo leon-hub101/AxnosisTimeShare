@@ -4,7 +4,6 @@
     <ion-title>Registration</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -12,9 +11,42 @@
     </ion-toolbar>
   </ion-header>
   <div id="container">
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <ion-input
+        formControlName="name"
+        type="text"
+        placeholder="Enter name"
+        label="Name"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="registerForm.get('name')!.touched && registerForm.get('name')!.invalid"
+      ></ion-input>
+      <ion-input
+        formControlName="surname"
+        type="text"
+        placeholder="Enter surname"
+        label="Surname"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="registerForm.get('surname')!.touched && registerForm.get('surname')!.invalid"
+      ></ion-input>
+      <ion-input
+        formControlName="email"
+        type="email"
+        placeholder="Enter email"
+        label="Email"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="registerForm.get('email')!.touched && registerForm.get('email')!.invalid"
+      ></ion-input>
+      <ion-button type="submit" expand="block" [disabled]="registerForm.invalid">Register</ion-button>
+      <ion-button expand="block" (click)="cancel()">Cancel</ion-button>
+    </form>
     <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
+    <ion-button expand="block" routerLink="/login">Go to Login</ion-button>
     <ion-button expand="block" routerLink="/bookings">Go to Bookings</ion-button>
     <ion-button expand="block" routerLink="/availability">Go to Availability</ion-button>
     <ion-button expand="block" routerLink="/approvals">Go to Approvals</ion-button>
+    <ion-button expand="block" routerLink="/manage-venues">Go to Manage Venues</ion-button>
   </div>
 </ion-content>

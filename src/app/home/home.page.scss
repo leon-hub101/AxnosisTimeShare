@@ -1,21 +1,14 @@
 ion-content {
-  --padding-start: 0; /* Remove default Ionic padding */
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center vertically */
-  align-items: center; /* Center horizontally */
-  height: 100vh; /* Use full viewport height */
-  overflow-y: auto; /* Allow scrolling for longer content */
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 #logo {
-  display: flex;
-  justify-content: center; /* Center logo */
-  align-items: center;
-  margin-bottom: 20px; /* Space below logo */
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .company-logo-body {
@@ -33,39 +26,29 @@ ion-content {
 }
 
 #portal {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center cards horizontally */
   width: 100%;
-  max-width: 600px; /* Limit width for readability */
-  padding: 0 20px; /* Horizontal padding */
-  margin-bottom: 20px; /* Space below portal */
-}
-
-#portal h2 {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 15px;
+  max-width: 600px; /* Limit width for better readability */
+  padding: 0 20px;
+  margin-bottom: 20px; /* Space between portal and container */
 }
 
 .venue-card {
-  width: 100%; /* Full width within max-width */
-  margin-bottom: 15px; /* Space between cards */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  margin: 10px 0; /* Space between cards */
+}
+
+.check-availability {
+  margin-top: 10px; /* Space above button in card */
 }
 
 #container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center buttons horizontally */
+  text-align: center;
   width: 100%;
-  max-width: 400px; /* Limit width for buttons */
-  padding: 0 20px; /* Horizontal padding */
+  max-width: 400px;
+  padding: 0 20px;
 }
 
 #container ion-button {
-  margin-bottom: 10px; /* Space between buttons */
-  width: 100%; /* Full-width buttons */
+  margin-bottom: 10px;
 }
 
 #container strong {

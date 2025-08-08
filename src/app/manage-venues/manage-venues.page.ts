@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonImg, IonInput, IonList, IonItem, IonSelect, IonSelectOption, IonLabel } from '@ionic/angular/standalone';
+import { Preferences } from '@capacitor/preferences';
 import { TimeshareService } from '../services/timeshare.service';
 import { TimeshareVenue, AdminUser } from '../models/types';
 

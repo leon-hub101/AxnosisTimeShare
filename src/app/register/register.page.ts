@@ -1,8 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonImg, IonInput, ToastController } from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonButton,
+  IonImg,
+  IonInput,
+  ToastController,
+} from '@ionic/angular/standalone';
+import { Preferences } from '@capacitor/preferences';
 import { User } from '../models/types';
 
 @Component({
@@ -10,41 +26,70 @@ import { User } from '../models/types';
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonImg, IonInput]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButton,
+    IonImg,
+    IonInput,
+  ],
 })
 export class RegisterPage implements OnInit {
   registerForm!: FormGroup;
-  mochUsers: User[] = [
-    {id: 'admin1', name: 'John', surname: 'Doe', email: 'John.Doe@example.com', role: 'admin'}
-  ];
 
-  constructor(private router: Router, private toastController: ToastController) {}
+  constructor(
+    private router: Router,
+    private toastController: ToastController
+  ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.registerForm = new FormGroup({
       name: new FormControl('', [Validators.required]),
       surname: new FormControl('', [Validators.required]),
-      email: new FormControl('', [Validators.required, Validators.email])
+      email: new FormControl('', [Validators.required, Validators.email]),
     });
+
+    await this.loadUsers();
   }
-async register() {
+
+  async loadUsers(): Promise<User[]> {
+    const { value } = await Preferences.get({ key: 'users' });
+    return value ? JSON.parse(value) : [];
+  }
+
+  async saveUsers(users: User[]): Promise<void> {
+    await Preferences.set({ key: 'users', value: JSON.stringify(users) });
+    this.registerForm.reset();
+    return;
+  }
+
+  async register() {
     if (this.registerForm.valid) {
       const email = this.registerForm.get('email')!.value;
-      if (this.mochUsers.find(user => user.email === email)) {
+      const users = await this.loadUsers();
+
+      if (users.find(user => user.email === email)) {
         await this.presentToast('Email already registered.');
         this.registerForm.reset();
         return;
       }
 
       const newUser: User = {
-        id: `user-${Date.now()}`, // Simple timestamp-based ID
+        id: `user-${Date.now()}`,
         name: this.registerForm.get('name')!.value,
         surname: this.registerForm.get('surname')!.value,
         email: email,
-        role: 'admin' // Default role
+        role: 'admin'
       };
 
-      this.mochUsers.push(newUser);
+      users.push(newUser);
+      await this.saveUsers(users);
       await this.presentToast('Registration successful! Please log in.');
       await this.router.navigateByUrl('/login');
     } else {
@@ -62,9 +107,8 @@ async register() {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
-      position: 'bottom'
+      position: 'bottom',
     });
     await toast.present();
   }
 }
-

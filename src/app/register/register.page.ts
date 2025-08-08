@@ -10,7 +10,7 @@ import { User } from '../models/types';
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonImg]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonImg, IonInput]
 })
 export class RegisterPage implements OnInit {
   registerForm!: FormGroup;

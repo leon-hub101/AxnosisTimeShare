@@ -1,15 +1,39 @@
-.company-logo-header {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    margin-right: 10px;
-    margin-left: 30px;
+ion-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
-.company-logo-body {
-    width: 10px;
-    height: 10px;
-    object-fit: contain;
-    margin-right: 10px;
-    margin-left: 10px;
+.company-logo-header {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-right: 10px;
+  margin-left: 30px;
+}
+
+#container {
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 20px;
+}
+
+#container ion-input {
+  margin-bottom: 20px;
+}
+
+#container .invalid {
+  --border-color: red;
+}
+
+#container ion-button {
+  margin-bottom: 10px;
+}
+
+ion-card {
+  max-width: 400px;
+  margin: 10px auto;
 }

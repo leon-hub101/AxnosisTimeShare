@@ -4,7 +4,6 @@
     <ion-title>Bookings</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -12,10 +11,44 @@
     </ion-toolbar>
   </ion-header>
   <div id="container">
+    <form [formGroup]="bookingForm" (ngSubmit)="createBooking()">
+      <ion-input
+        formControlName="venueId"
+        type="text"
+        placeholder="Enter venue ID (e.g., venue-123)"
+        label="Venue ID"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="bookingForm.get('venueId')!.touched && bookingForm.get('venueId')!.invalid"
+      ></ion-input>
+      <ion-input
+        formControlName="date"
+        type="text"
+        placeholder="Enter date (e.g., 2025-12-01)"
+        label="Date"
+        labelPlacement="floating"
+        fill="outline"
+        [class.invalid]="bookingForm.get('date')!.touched && bookingForm.get('date')!.invalid"
+      ></ion-input>
+      <ion-button type="submit" expand="block" [disabled]="bookingForm.invalid">Create Booking</ion-button>
+    </form>
+    <div *ngIf="bookings.length > 0">
+      <h3>Your Bookings</h3>
+      <ion-card *ngFor="let booking of bookings">
+        <ion-card-header>
+          <ion-card-title>{{ getVenueName(booking.venueId) }}</ion-card-title>
+          <ion-card-subtitle>{{ booking.date | date:'mediumDate' }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          Status: {{ booking.status }}
+        </ion-card-content>
+      </ion-card>
+    </div>
     <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
-    <ion-button expand="block" routerLink="/registration">Go to Registration</ion-button>
+    <ion-button expand="block" routerLink="/register">Go to Register</ion-button>
     <ion-button expand="block" routerLink="/login">Go to Login</ion-button>
     <ion-button expand="block" routerLink="/availability">Go to Availability</ion-button>
-    <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
+    <ion-button expand="block" routerLink="/approvals">Go to Approvals</ion-button>
+    <ion-button expand="block" routerLink="/manage-venues">Go to Manage Venues</ion-button>
   </div>
 </ion-content>

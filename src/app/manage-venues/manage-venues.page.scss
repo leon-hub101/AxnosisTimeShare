@@ -3,11 +3,16 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  max-width: 500px;
+  max-width: 400px;
   margin: 0 auto;
 }
 
-ion-input, ion-select {
+ion-input,
+ion-select {
+  margin-bottom: 20px;
+}
+
+ion-button {
   margin-bottom: 10px;
 }
 
@@ -17,4 +22,17 @@ ion-input, ion-select {
   object-fit: contain;
   margin-right: 10px;
   margin-left: 30px;
+}
+
+ion-list {
+  max-width: 400px;
+  margin: 10px auto;
+}
+
+ion-item {
+  --background: #fff;
+}
+
+.invalid {
+  --border-color: red;
 }

@@ -1,32 +1,32 @@
-export type Role = 'admin' | 'viewer';
+//export type Role = 'admin' | 'viewer';
 
 export interface User {
-    id: string;
-    name: string;
-    surname: string;
-    email: string;
-    role: Role;
+  id: string;
+  name: string;
+  surname: string;
+  email: string;
+  role: 'admin' | 'viewer';
 }
 
 export interface AdminUser extends User {
-    role: 'admin';
+  role: 'admin';
 }
 
 export interface ViewerUser extends User {
-    role: 'viewer';
+  role: 'viewer';
 }
 
 export interface TimeshareVenue {
-    id: string;
-    name: string;
-    location: string;
-    availableDates: Date[];
+  id: string;
+  name: string;
+  location: string;
+  availableDates: string[];
 }
 
 export interface TimeshareSlotApplication {
-    id: string;
-    venueId: string;
-    userId: string;
-    date: Date;
-    status: 'pending' | 'approved' | 'denied';
+  id: string;
+  userId: string;
+  venueId: string;
+  date: string | Date;
+  status: 'pending' | 'approved' | 'denied';
 }

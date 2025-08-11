@@ -4,7 +4,6 @@
     <ion-title>Approvals</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -12,10 +11,26 @@
     </ion-toolbar>
   </ion-header>
   <div id="container">
+    <h3 *ngIf="currentUser && currentUser.role === 'admin'">Pending Applications</h3>
+    <p *ngIf="!currentUser || currentUser.role !== 'admin'">Access restricted to admins.</p>
+    <ion-card *ngFor="let application of pendingApplications">
+      <ion-card-header>
+        <ion-card-title>{{ getVenueName(application.venueId) }}</ion-card-title>
+        <ion-card-content>Booking ID: {{ application.id }}</ion-card-content>
+      </ion-card-header>
+      <ion-card-content>
+        User ID: {{ application.userId }}<br>
+        Date: {{ application.date | date: 'yyyy-MM-dd' }}<br>
+        Status: {{ application.status }}
+      </ion-card-content>
+      <ion-button expand="block" color="success" (click)="approveApplication(application.id)">Approve</ion-button>
+      <ion-button expand="block" color="danger" (click)="denyApplication(application.id)">Deny</ion-button>
+    </ion-card>
     <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
-    <ion-button expand="block" routerLink="/registration">Go to Registration</ion-button>
+    <ion-button expand="block" routerLink="/register">Go to Register</ion-button>
     <ion-button expand="block" routerLink="/login">Go to Login</ion-button>
     <ion-button expand="block" routerLink="/bookings">Go to Bookings</ion-button>
     <ion-button expand="block" routerLink="/availability">Go to Availability</ion-button>
+    <ion-button expand="block" routerLink="/manage-venues">Go to Manage Venues</ion-button>
   </div>
 </ion-content>

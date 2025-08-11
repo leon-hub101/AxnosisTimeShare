@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonSelect, IonSelectOption, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
-import { TimeshareSlotApplication, TimeshareVenue, User } from '../models/types';
+import { TimeshareSlotApplication, TimeshareVenue, User, ViewerUser } from '../models/types';
+import { TimeshareService } from '../services/timeshare.service';
 
 @Component({
   selector: 'app-bookings',
@@ -19,7 +20,12 @@ export class BookingsPage implements OnInit {
   venues: TimeshareVenue[] = [];
   currentUser: User | null = null;
 
-  constructor(private router: Router, private toastController: ToastController) {}
+  constructor(
+    private router: Router,
+    private toastController: ToastController,
+    private timeshareService: TimeshareService,
+    private route: ActivatedRoute
+  ) {}
 
   async ngOnInit() {
     this.bookingForm = new FormGroup({
@@ -30,6 +36,16 @@ export class BookingsPage implements OnInit {
     await this.loadCurrentUser();
     await this.loadVenues();
     await this.loadBookings();
+
+    // Pre-fill form from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['venueId'] && params['date']) {
+        this.bookingForm.patchValue({
+          venueId: params['venueId'],
+          date: params['date']
+        });
+      }
+    });
   }
 
   async loadCurrentUser(): Promise<void> {
@@ -38,20 +54,23 @@ export class BookingsPage implements OnInit {
   }
 
   async loadVenues(): Promise<void> {
-    const { value } = await Preferences.get({ key: 'venues' });
-    this.venues = value ? JSON.parse(value) : [];
-  }
-
-  async loadBookings(): Promise<void> {
-    const { value } = await Preferences.get({ key: 'bookings' });
-    this.bookings = value ? JSON.parse(value) : [];
-    if (this.currentUser) {
-      this.bookings = this.bookings.filter(booking => booking.userId === this.currentUser!.id);
+    try {
+      this.venues = this.timeshareService.getVenues();
+    } catch (error) {
+      await this.presentToast('Error loading venues.');
     }
   }
 
-  async saveBookings(): Promise<void> {
-    await Preferences.set({ key: 'bookings', value: JSON.stringify(this.bookings) });
+  async loadBookings(): Promise<void> {
+    try {
+      const { value } = await Preferences.get({ key: 'bookings' });
+      this.bookings = value ? JSON.parse(value) : [];
+      if (this.currentUser) {
+        this.bookings = this.bookings.filter(booking => booking.userId === this.currentUser!.id);
+      }
+    } catch (error) {
+      await this.presentToast('Error loading bookings.');
+    }
   }
 
   async createBooking() {
@@ -76,18 +95,15 @@ export class BookingsPage implements OnInit {
         return;
       }
 
-      const newBooking: TimeshareSlotApplication = {
-        id: `booking-${Date.now()}`,
-        venueId,
-        userId: this.currentUser.id,
-        date: new Date(date),
-        status: 'pending'
-      };
-
-      this.bookings.push(newBooking);
-      await this.saveBookings();
-      await this.presentToast('Booking created successfully!');
-      this.bookingForm.reset();
+      try {
+        const viewerUser = this.currentUser as ViewerUser;
+        const newBooking = this.timeshareService.applyForSlot(viewerUser, venueId, new Date(date));
+        this.bookings.push(newBooking);
+        await this.presentToast('Booking created successfully!');
+        this.bookingForm.reset();
+      } catch (error) {
+        await this.presentToast('Error creating booking.');
+      }
     } else {
       this.bookingForm.markAllAsTouched();
       await this.presentToast('Please fill in all fields correctly.');

@@ -4,7 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } 
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
-import { TimeshareVenue, User } from '../models/types';
+import { TimeshareVenue, User, AdminUser } from '../models/types';
+import { TimeshareService } from '../services/timeshare.service';
 
 @Component({
   selector: 'app-manage-venues',
@@ -19,7 +20,11 @@ export class ManageVenuesPage implements OnInit {
   venues: TimeshareVenue[] = [];
   currentUser: User | null = null;
 
-  constructor(private router: Router, private toastController: ToastController) {}
+  constructor(
+    private router: Router,
+    private toastController: ToastController,
+    private timeshareService: TimeshareService
+  ) {}
 
   async ngOnInit() {
     await this.loadCurrentUser();
@@ -49,29 +54,35 @@ export class ManageVenuesPage implements OnInit {
   }
 
   async loadVenues(): Promise<void> {
-    const { value } = await Preferences.get({ key: 'venues' });
-    this.venues = value ? JSON.parse(value) : [];
-  }
-
-  async saveVenues(): Promise<void> {
-    await Preferences.set({ key: 'venues', value: JSON.stringify(this.venues) });
+    try {
+      this.venues = this.timeshareService.getVenues();
+    } catch (error) {
+      await this.presentToast('Error loading venues.');
+    }
   }
 
   async addVenue() {
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      await this.presentToast('Only admins can add venues.');
+      return;
+    }
+
     if (this.venueForm.valid) {
       const dates = this.venueForm.get('availableDates')!.value.split(',').map((date: string) => date.trim());
       if (dates.every((date: string) => !isNaN(Date.parse(date)))) {
-        const newVenue: TimeshareVenue = {
-          id: `venue-${Date.now()}`,
-          name: this.venueForm.get('name')!.value,
-          location: this.venueForm.get('location')!.value,
-          availableDates: dates
-        };
-
-        this.venues.push(newVenue);
-        await this.saveVenues();
-        await this.presentToast('Venue added successfully!');
-        this.venueForm.reset();
+        try {
+          const adminUser = this.currentUser as AdminUser;
+          const newVenue = this.timeshareService.addVenue(adminUser, {
+            name: this.venueForm.get('name')!.value,
+            location: this.venueForm.get('location')!.value,
+            availableDates: dates
+          });
+          this.venues = this.timeshareService.getVenues();
+          await this.presentToast('Venue added successfully!');
+          this.venueForm.reset();
+        } catch (error) {
+          await this.presentToast('Error adding venue.');
+        }
       } else {
         await this.presentToast('Invalid date format. Use YYYY-MM-DD, separated by commas.');
       }
@@ -82,18 +93,23 @@ export class ManageVenuesPage implements OnInit {
   }
 
   async updateDates() {
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      await this.presentToast('Only admins can update dates.');
+      return;
+    }
+
     if (this.updateForm.valid) {
       const selectedVenueId = this.updateForm.get('selectedVenueId')!.value;
       const newDates = this.updateForm.get('newDates')!.value.split(',').map((date: string) => date.trim());
       if (newDates.every((date: string) => !isNaN(Date.parse(date)))) {
-        const venue = this.venues.find(v => v.id === selectedVenueId);
-        if (venue) {
-          venue.availableDates = newDates;
-          await this.saveVenues();
+        try {
+          const adminUser = this.currentUser as AdminUser;
+          this.timeshareService.updateAvailableDates(adminUser, selectedVenueId, newDates.map((date: string) => new Date(date)));
+          this.venues = this.timeshareService.getVenues();
           await this.presentToast('Dates updated successfully!');
           this.updateForm.reset();
-        } else {
-          await this.presentToast('Venue not found.');
+        } catch (error) {
+          await this.presentToast('Error updating dates.');
         }
       } else {
         await this.presentToast('Invalid date format. Use YYYY-MM-DD, separated by commas.');
@@ -105,9 +121,19 @@ export class ManageVenuesPage implements OnInit {
   }
 
   async deleteVenue(venueId: string) {
-    this.venues = this.venues.filter(v => v.id !== venueId);
-    await this.saveVenues();
-    await this.presentToast('Venue deleted successfully!');
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      await this.presentToast('Only admins can delete venues.');
+      return;
+    }
+
+    try {
+      const adminUser = this.currentUser as AdminUser;
+      this.timeshareService.deleteVenue(adminUser, venueId);
+      this.venues = this.timeshareService.getVenues();
+      await this.presentToast('Venue deleted successfully!');
+    } catch (error) {
+      await this.presentToast('Error deleting venue.');
+    }
   }
 
   async presentToast(message: string) {

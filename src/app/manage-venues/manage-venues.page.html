@@ -31,15 +31,13 @@
         fill="outline"
         [class.invalid]="venueForm.get('location')!.touched && venueForm.get('location')!.invalid"
       ></ion-input>
-      <ion-input
+      <ion-datetime
         formControlName="availableDates"
-        type="text"
-        placeholder="Enter dates (e.g., 2025-12-01,2025-12-02)"
+        presentation="date"
+        multiple="true"
         label="Available Dates"
-        labelPlacement="floating"
-        fill="outline"
         [class.invalid]="venueForm.get('availableDates')!.touched && venueForm.get('availableDates')!.invalid"
-      ></ion-input>
+      ></ion-datetime>
       <ion-button type="submit" expand="block" [disabled]="venueForm.invalid">Add Venue</ion-button>
     </form>
     <h3>Update Venue Dates</h3>
@@ -47,15 +45,13 @@
       <ion-select formControlName="selectedVenueId" placeholder="Select Venue">
         <ion-select-option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</ion-select-option>
       </ion-select>
-      <ion-input
+      <ion-datetime
         formControlName="newDates"
-        type="text"
-        placeholder="Enter new dates (e.g., 2025-12-01,2025-12-02)"
+        presentation="date"
+        multiple="true"
         label="New Dates"
-        labelPlacement="floating"
-        fill="outline"
         [class.invalid]="updateForm.get('newDates')!.touched && updateForm.get('newDates')!.invalid"
-      ></ion-input>
+      ></ion-datetime>
       <ion-button type="submit" expand="block" [disabled]="updateForm.invalid">Update Dates</ion-button>
     </form>
     <h3>Venues</h3>

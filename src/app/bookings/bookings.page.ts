@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, ToastController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonSelect, IonSelectOption, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
 import { TimeshareSlotApplication, TimeshareVenue, User } from '../models/types';
 
@@ -11,7 +11,7 @@ import { TimeshareSlotApplication, TimeshareVenue, User } from '../models/types'
   templateUrl: './bookings.page.html',
   styleUrls: ['./bookings.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonSelect, IonSelectOption, IonDatetime]
 })
 export class BookingsPage implements OnInit {
   bookingForm!: FormGroup;
@@ -45,6 +45,9 @@ export class BookingsPage implements OnInit {
   async loadBookings(): Promise<void> {
     const { value } = await Preferences.get({ key: 'bookings' });
     this.bookings = value ? JSON.parse(value) : [];
+    if (this.currentUser) {
+      this.bookings = this.bookings.filter(booking => booking.userId === this.currentUser!.id);
+    }
   }
 
   async saveBookings(): Promise<void> {

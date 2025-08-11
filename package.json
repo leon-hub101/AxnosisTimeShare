@@ -32,7 +32,9 @@
     "@capacitor/preferences": "^7.0.2",
     "@capacitor/status-bar": "7.0.2",
     "@ionic/angular": "^8.0.0",
+    "glob": "^11.0.3",
     "ionicons": "^7.0.0",
+    "rimraf": "^6.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

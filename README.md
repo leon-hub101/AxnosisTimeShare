@@ -40,8 +40,7 @@ npx cap run ios # or android
 
 
 Test Admin Features:
-
-Use the mock admin user (set in login.page.ts) or register a new user with role: 'admin'.
+Login with John.Doe@example.com to have admin rights.
 
 
 

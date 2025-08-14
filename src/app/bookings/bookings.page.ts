@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonSelect, IonSelectOption, IonDatetime, ToastController } from '@ionic/angular/standalone';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonImg, IonButton, IonSelect, IonSelectOption, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
-import { TimeshareSlotApplication, TimeshareVenue, User, ViewerUser } from '../models/types';
+import { TimeshareVenue, TimeshareSlotApplication, User, ViewerUser } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
 
 @Component({
@@ -12,37 +12,60 @@ import { TimeshareService } from '../services/timeshare.service';
   templateUrl: './bookings.page.html',
   styleUrls: ['./bookings.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonInput, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonSelect, IonSelectOption, IonDatetime]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    IonLabel,
+    IonImg,
+    IonButton,
+    IonSelect,
+    IonSelectOption,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonDatetime,
+  ],
 })
 export class BookingsPage implements OnInit {
   bookingForm!: FormGroup;
-  bookings: TimeshareSlotApplication[] = [];
   venues: TimeshareVenue[] = [];
+  bookings: TimeshareSlotApplication[] = [];
   currentUser: User | null = null;
 
   constructor(
     private router: Router,
+    private activatedRoute: ActivatedRoute,
     private toastController: ToastController,
-    private timeshareService: TimeshareService,
-    private route: ActivatedRoute
+    private timeshareService: TimeshareService
   ) {}
 
   async ngOnInit() {
     this.bookingForm = new FormGroup({
       venueId: new FormControl('', [Validators.required]),
-      date: new FormControl('', [Validators.required])
+      date: new FormControl('', [Validators.required]),
     });
 
     await this.loadCurrentUser();
+    if (!this.currentUser) {
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+
     await this.loadVenues();
     await this.loadBookings();
 
-    // Pre-fill form from query params
-    this.route.queryParams.subscribe(params => {
+    this.activatedRoute.queryParams.subscribe(params => {
       if (params['venueId'] && params['date']) {
         this.bookingForm.patchValue({
           venueId: params['venueId'],
-          date: params['date']
+          date: params['date'],
         });
       }
     });
@@ -55,7 +78,7 @@ export class BookingsPage implements OnInit {
 
   async loadVenues(): Promise<void> {
     try {
-      this.venues = this.timeshareService.getVenues();
+      this.venues = await this.timeshareService.getVenues(); // Fix TS2740: Await Promise
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
@@ -63,14 +86,16 @@ export class BookingsPage implements OnInit {
 
   async loadBookings(): Promise<void> {
     try {
-      const { value } = await Preferences.get({ key: 'bookings' });
-      this.bookings = value ? JSON.parse(value) : [];
-      if (this.currentUser) {
-        this.bookings = this.bookings.filter(booking => booking.userId === this.currentUser!.id);
-      }
+      const bookings = await this.timeshareService.getPendingApplications();
+      this.bookings = bookings.filter(b => b.userId === this.currentUser?.id);
     } catch (error) {
       await this.presentToast('Error loading bookings.');
     }
+  }
+
+  getVenueName(venueId: string): string {
+    const venue = this.venues.find(v => v.id === venueId);
+    return venue ? `${venue.name} - ${venue.location}` : 'Unknown Venue';
   }
 
   async createBooking() {
@@ -82,22 +107,22 @@ export class BookingsPage implements OnInit {
 
     if (this.bookingForm.valid) {
       const venueId = this.bookingForm.get('venueId')!.value;
-      const venue = this.venues.find(v => v.id === venueId);
       const date = this.bookingForm.get('date')!.value;
+      const venue = this.venues.find(v => v.id === venueId);
 
       if (!venue) {
         await this.presentToast('Invalid venue selected.');
         return;
       }
 
-      if (!venue.availableDates.includes(date)) {
+      const formattedDate = date.split('T')[0];
+      if (!venue.availableDates.includes(formattedDate)) {
         await this.presentToast('Selected date is not available.');
         return;
       }
 
       try {
-        const viewerUser = this.currentUser as ViewerUser;
-        const newBooking = this.timeshareService.applyForSlot(viewerUser, venueId, new Date(date));
+        const newBooking = await this.timeshareService.applyForSlot(this.currentUser as ViewerUser, venueId, new Date(formattedDate)); // Fix TS2345: Await Promise
         this.bookings.push(newBooking);
         await this.presentToast('Booking created successfully!');
         this.bookingForm.reset();
@@ -106,19 +131,15 @@ export class BookingsPage implements OnInit {
       }
     } else {
       this.bookingForm.markAllAsTouched();
-      await this.presentToast('Please fill in all fields correctly.');
+      await this.presentToast('Please select a venue and date.');
     }
-  }
-
-  getVenueName(venueId: string): string {
-    return this.venues.find(v => v.id === venueId)?.name || 'Unknown';
   }
 
   async presentToast(message: string) {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
-      position: 'bottom'
+      position: 'bottom',
     });
     await toast.present();
   }

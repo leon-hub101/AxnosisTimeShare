@@ -79,7 +79,7 @@ export class AvailabilityPage implements OnInit {
 
   async loadVenues(): Promise<void> {
     try {
-      this.venues = this.timeshareService.getVenues();
+      this.venues = await this.timeshareService.getVenues(); // Await async call
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
@@ -102,13 +102,15 @@ export class AvailabilityPage implements OnInit {
         return;
       }
 
-      if (!venue.availableDates.includes(date)) {
+      // Ensure date is in YYYY-MM-DD format for comparison
+      const formattedDate = date.split('T')[0];
+      if (!venue.availableDates.includes(formattedDate)) {
         await this.presentToast('Selected date is not available.');
         return;
       }
 
       await this.router.navigate(['/bookings'], {
-        queryParams: { venueId, date },
+        queryParams: { venueId, date: formattedDate },
       });
       this.availabilityForm.reset();
     } else {

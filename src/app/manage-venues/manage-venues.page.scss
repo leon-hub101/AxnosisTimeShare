@@ -8,7 +8,8 @@
 }
 
 ion-input,
-ion-select {
+ion-select,
+ion-datetime {
   margin-bottom: 20px;
 }
 
@@ -35,4 +36,10 @@ ion-item {
 
 .invalid {
   --border-color: red;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 10px;
 }

@@ -10,8 +10,11 @@ export class TimeshareService {
   private applications: TimeshareSlotApplication[] = [];
 
   constructor() {
-    this.loadVenues();
-    this.loadApplications();
+    this.init();
+  }
+
+  private async init() {
+    await Promise.all([this.loadVenues(), this.loadApplications()]);
   }
 
   private async loadVenues() {
@@ -40,46 +43,51 @@ export class TimeshareService {
     }
   }
 
-  addVenue(user: AdminUser, venue: Omit<TimeshareVenue, 'id'>): TimeshareVenue {
+  async addVenue(user: AdminUser, venue: Omit<TimeshareVenue, 'id'>): Promise<TimeshareVenue> {
     this.restrictToAdmin(user);
     const newVenue: TimeshareVenue = {
       id: `venue-${Date.now()}`,
       ...venue
     };
     this.venues.push(newVenue);
-    this.saveVenues();
+    await this.saveVenues();
     return newVenue;
   }
 
-  deleteVenue(user: AdminUser, venueId: string): void {
+  async deleteVenue(user: AdminUser, venueId: string): Promise<void> {
     this.restrictToAdmin(user);
     this.venues = this.venues.filter(venue => venue.id !== venueId);
-    this.saveVenues();
+    await this.saveVenues();
   }
 
-  addAvailableDates(user: AdminUser, venueId: string, dates: Date[]): void {
+  async addAvailableDates(user: AdminUser, venueId: string, dates: string[]): Promise<void> {
     this.restrictToAdmin(user);
     const venue = this.venues.find(v => v.id === venueId);
     if (venue) {
-      venue.availableDates = [...(venue.availableDates || []), ...dates.map(d => d.toISOString().split('T')[0])];
-      this.saveVenues();
+      venue.availableDates = [...(venue.availableDates || []), ...dates];
+      await this.saveVenues();
+    } else {
+      throw new Error('Venue not found');
     }
   }
 
-  updateAvailableDates(user: AdminUser, venueId: string, dates: Date[]): void {
+  async updateAvailableDates(user: AdminUser, venueId: string, dates: string[]): Promise<void> {
     this.restrictToAdmin(user);
     const venue = this.venues.find(v => v.id === venueId);
     if (venue) {
-      venue.availableDates = dates.map(d => d.toISOString().split('T')[0]);
-      this.saveVenues();
+      venue.availableDates = dates;
+      await this.saveVenues();
+    } else {
+      throw new Error('Venue not found');
     }
   }
 
-  getVenues(): TimeshareVenue[] {
-    return this.venues;
+  async getVenues(): Promise<TimeshareVenue[]> {
+    await this.loadVenues();
+    return [...this.venues];
   }
 
-  applyForSlot(user: ViewerUser, venueId: string, date: Date): TimeshareSlotApplication {
+  async applyForSlot(user: ViewerUser, venueId: string, date: Date): Promise<TimeshareSlotApplication> {
     const application: TimeshareSlotApplication = {
       id: `app-${Date.now()}`,
       userId: user.id,
@@ -88,20 +96,23 @@ export class TimeshareService {
       status: 'pending'
     };
     this.applications.push(application);
-    this.saveApplications();
+    await this.saveApplications();
     return application;
   }
 
-  updateApplicationStatus(user: AdminUser, applicationId: string, status: 'approved' | 'denied'): void {
+  async updateApplicationStatus(user: AdminUser, applicationId: string, status: 'approved' | 'denied'): Promise<void> {
     this.restrictToAdmin(user);
     const application = this.applications.find(app => app.id === applicationId);
     if (application) {
       application.status = status;
-      this.saveApplications();
+      await this.saveApplications();
+    } else {
+      throw new Error('Application not found');
     }
   }
 
-  getPendingApplications(): TimeshareSlotApplication[] {
+  async getPendingApplications(): Promise<TimeshareSlotApplication[]> {
+    await this.loadApplications();
     return this.applications.filter(app => app.status === 'pending');
   }
 }

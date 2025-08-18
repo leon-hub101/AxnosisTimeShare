@@ -1,28 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import {
-  IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-  IonImg,
-  IonButton,
-  IonSelect,
-  IonSelectOption,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonDatetime,
-  ToastController,
-} from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
 import { TimeshareVenue, User } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
@@ -65,7 +45,7 @@ export class AvailabilityPage implements OnInit {
   async ngOnInit() {
     this.availabilityForm = new FormGroup({
       venueId: new FormControl('', [Validators.required]),
-      date: new FormControl('', [Validators.required]),
+      dates: new FormControl([], [Validators.required]),
     });
 
     await this.loadCurrentUser();
@@ -79,22 +59,22 @@ export class AvailabilityPage implements OnInit {
 
   async loadVenues(): Promise<void> {
     try {
-      this.venues = await this.timeshareService.getVenues(); // Await async call
+      this.venues = await this.timeshareService.getVenues();
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
   }
 
-  async bookSelectedDate() {
+  async bookSelectedDates() {
     if (!this.currentUser) {
-      await this.presentToast('Please log in to book a date.');
+      await this.presentToast('Please log in to book dates.');
       await this.router.navigateByUrl('/login');
       return;
     }
 
     if (this.availabilityForm.valid) {
       const venueId = this.availabilityForm.get('venueId')!.value;
-      const date = this.availabilityForm.get('date')!.value;
+      const dates = this.availabilityForm.get('dates')!.value;
       const venue = this.venues.find((v) => v.id === venueId);
 
       if (!venue) {
@@ -102,20 +82,25 @@ export class AvailabilityPage implements OnInit {
         return;
       }
 
-      // Ensure date is in YYYY-MM-DD format for comparison
-      const formattedDate = date.split('T')[0];
-      if (!venue.availableDates.includes(formattedDate)) {
-        await this.presentToast('Selected date is not available.');
+      const formattedDates = Array.isArray(dates) ? dates.map((d: string) => d.split('T')[0]) : [];
+      const unavailableDates = formattedDates.filter((d: string) => !venue.availableDates.includes(d));
+      if (unavailableDates.length > 0) {
+        await this.presentToast(`Selected dates are not available: ${unavailableDates.join(', ')}`);
         return;
       }
 
-      await this.router.navigate(['/bookings'], {
-        queryParams: { venueId, date: formattedDate },
-      });
-      this.availabilityForm.reset();
+      try {
+        await this.timeshareService.validateBooking(this.currentUser, venueId, formattedDates);
+        await this.router.navigate(['/bookings'], {
+          queryParams: { venueId, dates: JSON.stringify(formattedDates) },
+        });
+        this.availabilityForm.reset();
+      } catch (error: any) {
+        await this.presentToast(error.message || 'Error validating booking.');
+      }
     } else {
       this.availabilityForm.markAllAsTouched();
-      await this.presentToast('Please select a venue and date.');
+      await this.presentToast('Please select a venue and at least one date.');
     }
   }
 

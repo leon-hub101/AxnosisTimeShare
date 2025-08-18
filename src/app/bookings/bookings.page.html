@@ -23,13 +23,14 @@
         <ion-select-option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</ion-select-option>
       </ion-select>
       <ion-datetime
-        formControlName="date"
+        formControlName="dates"
         presentation="date"
-        label="Date"
-        [class.invalid]="bookingForm.get('date')!.touched && bookingForm.get('date')!.invalid"
+        multiple="true"
+        label="Dates"
+        [class.invalid]="bookingForm.get('dates')!.touched && bookingForm.get('dates')!.invalid"
       ></ion-datetime>
-      <ion-label *ngIf="bookingForm.get('date')!.touched && bookingForm.get('date')!.invalid" class="error-message">
-        Please select a valid date.
+      <ion-label *ngIf="bookingForm.get('dates')!.touched && bookingForm.get('dates')!.invalid" class="error-message">
+        Please select at least one valid date.
       </ion-label>
       <ion-button type="submit" expand="block" [disabled]="bookingForm.invalid">Create Booking</ion-button>
     </form>
@@ -41,6 +42,11 @@
       <ion-card-content>
         <p>Date: {{ booking.date }}</p>
         <p>Status: {{ booking.status }}</p>
+        <ion-button
+          *ngIf="booking.status === 'pending' && booking.userId === currentUser?.id"
+          color="danger"
+          (click)="cancelBooking(booking.id)"
+        >Cancel</ion-button>
       </ion-card-content>
     </ion-card>
     <ion-button expand="block" routerLink="/register">Go to Registration</ion-button>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
-import { AdminUser, ViewerUser, TimeshareVenue, TimeshareSlotApplication } from '../models/types';
+import { AdminUser, ViewerUser, TimeshareVenue, TimeshareSlotApplication, User } from '../models/types';
 
 @Injectable({
   providedIn: 'root'
@@ -87,17 +87,56 @@ export class TimeshareService {
     return [...this.venues];
   }
 
-  async applyForSlot(user: ViewerUser, venueId: string, date: Date): Promise<TimeshareSlotApplication> {
-    const application: TimeshareSlotApplication = {
-      id: `app-${Date.now()}`,
+  async validateBooking(user: User, venueId: string, dates: string[]): Promise<void> {
+    await this.loadApplications();
+    const userBookings = this.applications.filter(app => app.userId === user.id);
+    
+    // Check for same date on different properties
+    const conflictingBookings = userBookings.filter(app => 
+      dates.includes(app.date) && app.venueId !== venueId
+    );
+    if (conflictingBookings.length > 0) {
+      throw new Error(`Cannot book dates already booked on other properties: ${conflictingBookings.map(b => b.date).join(', ')}`);
+    }
+
+    // Check for same date on same property
+    const duplicateBookings = userBookings.filter(app => 
+      dates.includes(app.date) && app.venueId === venueId
+    );
+    if (duplicateBookings.length > 0) {
+      throw new Error(`Cannot book same dates twice on this property: ${duplicateBookings.map(b => b.date).join(', ')}`);
+    }
+  }
+
+  async applyForSlot(user: User, venueId: string, dates: string[]): Promise<TimeshareSlotApplication[]> {
+    const formattedDates = Array.isArray(dates) ? dates.map(d => d.split('T')[0]) : [];
+    await this.validateBooking(user, venueId, formattedDates);
+    
+    const newApplications: TimeshareSlotApplication[] = formattedDates.map(date => ({
+      id: `app-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       userId: user.id,
       venueId,
-      date: date.toISOString().split('T')[0],
+      date,
       status: 'pending'
-    };
-    this.applications.push(application);
+    }));
+
+    this.applications.push(...newApplications);
     await this.saveApplications();
-    return application;
+    return newApplications;
+  }
+
+  async cancelBooking(user: User, applicationId: string): Promise<void> {
+    await this.loadApplications();
+    const applicationIndex = this.applications.findIndex(app => app.id === applicationId && app.userId === user.id);
+    if (applicationIndex === -1) {
+      throw new Error('Booking not found or not owned by user');
+    }
+    const application = this.applications[applicationIndex];
+    if (application.status !== 'pending') {
+      throw new Error('Only pending bookings can be cancelled');
+    }
+    this.applications.splice(applicationIndex, 1);
+    await this.saveApplications();
   }
 
   async updateApplicationStatus(user: AdminUser, applicationId: string, status: 'approved' | 'denied'): Promise<void> {

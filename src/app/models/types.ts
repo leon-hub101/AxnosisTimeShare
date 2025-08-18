@@ -1,4 +1,4 @@
-//export type Role = 'admin' | 'viewer';
+export type Role = 'admin' | 'viewer';
 
 export interface User {
   id: string;
@@ -27,6 +27,6 @@ export interface TimeshareSlotApplication {
   id: string;
   userId: string;
   venueId: string;
-  date: string | Date;
+  date: string; 
   status: 'pending' | 'approved' | 'denied';
 }

@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } 
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonLabel, IonImg, IonButton, IonSelect, IonSelectOption, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
-import { TimeshareVenue, TimeshareSlotApplication, User, ViewerUser } from '../models/types';
+import { TimeshareVenue, TimeshareSlotApplication, User } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
 
 @Component({
@@ -49,7 +49,7 @@ export class BookingsPage implements OnInit {
   async ngOnInit() {
     this.bookingForm = new FormGroup({
       venueId: new FormControl('', [Validators.required]),
-      date: new FormControl('', [Validators.required]),
+      dates: new FormControl([], [Validators.required]),
     });
 
     await this.loadCurrentUser();
@@ -62,10 +62,10 @@ export class BookingsPage implements OnInit {
     await this.loadBookings();
 
     this.activatedRoute.queryParams.subscribe(params => {
-      if (params['venueId'] && params['date']) {
+      if (params['venueId'] && params['dates']) {
         this.bookingForm.patchValue({
           venueId: params['venueId'],
-          date: params['date'],
+          dates: JSON.parse(params['dates']),
         });
       }
     });
@@ -78,7 +78,7 @@ export class BookingsPage implements OnInit {
 
   async loadVenues(): Promise<void> {
     try {
-      this.venues = await this.timeshareService.getVenues(); // Fix TS2740: Await Promise
+      this.venues = await this.timeshareService.getVenues();
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
@@ -107,7 +107,7 @@ export class BookingsPage implements OnInit {
 
     if (this.bookingForm.valid) {
       const venueId = this.bookingForm.get('venueId')!.value;
-      const date = this.bookingForm.get('date')!.value;
+      const dates = this.bookingForm.get('dates')!.value;
       const venue = this.venues.find(v => v.id === venueId);
 
       if (!venue) {
@@ -115,23 +115,41 @@ export class BookingsPage implements OnInit {
         return;
       }
 
-      const formattedDate = date.split('T')[0];
-      if (!venue.availableDates.includes(formattedDate)) {
-        await this.presentToast('Selected date is not available.');
+      const formattedDates = Array.isArray(dates) ? dates.map((d: string) => d.split('T')[0]) : [];
+      const unavailableDates = formattedDates.filter((d: string) => !venue.availableDates.includes(d));
+      if (unavailableDates.length > 0) {
+        await this.presentToast(`Selected dates are not available: ${unavailableDates.join(', ')}`);
         return;
       }
 
       try {
-        const newBooking = await this.timeshareService.applyForSlot(this.currentUser as ViewerUser, venueId, new Date(formattedDate)); // Fix TS2345: Await Promise
-        this.bookings.push(newBooking);
-        await this.presentToast('Booking created successfully!');
+        await this.timeshareService.validateBooking(this.currentUser, venueId, formattedDates);
+        const newBookings = await this.timeshareService.applyForSlot(this.currentUser, venueId, formattedDates);
+        this.bookings.push(...newBookings);
+        await this.presentToast('Bookings created successfully!');
         this.bookingForm.reset();
-      } catch (error) {
-        await this.presentToast('Error creating booking.');
+      } catch (error: any) {
+        await this.presentToast(error.message || 'Error creating booking.');
       }
     } else {
       this.bookingForm.markAllAsTouched();
-      await this.presentToast('Please select a venue and date.');
+      await this.presentToast('Please select a venue and at least one date.');
+    }
+  }
+
+  async cancelBooking(applicationId: string) {
+    if (!this.currentUser) {
+      await this.presentToast('Please log in to cancel a booking.');
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+
+    try {
+      await this.timeshareService.cancelBooking(this.currentUser, applicationId);
+      this.bookings = this.bookings.filter(b => b.id !== applicationId);
+      await this.presentToast('Booking cancelled successfully.');
+    } catch (error: any) {
+      await this.presentToast(error.message || 'Error cancelling booking.');
     }
   }
 

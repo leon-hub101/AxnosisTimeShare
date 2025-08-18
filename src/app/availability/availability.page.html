@@ -13,17 +13,27 @@
   <div id="container">
     <h3 *ngIf="currentUser">Check Availability</h3>
     <p *ngIf="!currentUser">Please log in to check availability.</p>
-    <form [formGroup]="availabilityForm" (ngSubmit)="bookSelectedDate()" *ngIf="currentUser">
-      <ion-select formControlName="venueId" placeholder="Select Venue">
+    <form [formGroup]="availabilityForm" (ngSubmit)="bookSelectedDates()" *ngIf="currentUser">
+      <ion-select
+        formControlName="venueId"
+        placeholder="Select Venue"
+        label="Venue"
+        labelPlacement="floating"
+        [class.invalid]="availabilityForm.get('venueId')!.touched && availabilityForm.get('venueId')!.invalid"
+      >
         <ion-select-option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }} - {{ venue.location }}</ion-select-option>
       </ion-select>
       <ion-datetime
-        formControlName="date"
+        formControlName="dates"
         presentation="date"
-        label="Date"
-        [class.invalid]="availabilityForm.get('date')!.touched && availabilityForm.get('date')!.invalid"
+        multiple="true"
+        label="Dates"
+        [class.invalid]="availabilityForm.get('dates')!.touched && availabilityForm.get('dates')!.invalid"
       ></ion-datetime>
-      <ion-button type="submit" expand="block" [disabled]="availabilityForm.invalid">Book Selected Date</ion-button>
+      <ion-label *ngIf="availabilityForm.get('dates')!.touched && availabilityForm.get('dates')!.invalid" class="error-message">
+        Please select at least one valid date.
+      </ion-label>
+      <ion-button type="submit" expand="block" [disabled]="availabilityForm.invalid">Book Selected Dates</ion-button>
     </form>
     <h3 *ngIf="venues.length > 0">Available Venues</h3>
     <ion-list *ngIf="venues.length > 0">

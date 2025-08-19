@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { AdminUser, ViewerUser, TimeshareVenue, TimeshareSlotApplication, User } from '../models/types';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +9,15 @@ import { AdminUser, ViewerUser, TimeshareVenue, TimeshareSlotApplication, User }
 export class TimeshareService {
   private venues: TimeshareVenue[] = [];
   private applications: TimeshareSlotApplication[] = [];
+  private venuesChanged = new Subject<void>(); // Subject to notify venue changes
 
   constructor() {
     this.init();
+  }
+
+  // Observable for components to subscribe to venue changes
+  getVenuesChanged() {
+    return this.venuesChanged.asObservable();
   }
 
   private async init() {
@@ -19,13 +26,12 @@ export class TimeshareService {
 
   private async loadVenues() {
     const { value } = await Preferences.get({ key: 'venues' });
-    this.venues = value ? JSON.parse(value) : [
-      { id: 'venue1', name: 'Beach House', location: 'Cape Town', availableDates: ['2025-08-10', '2025-08-11'] }
-    ];
+    this.venues = value ? JSON.parse(value) : [];
   }
 
   private async saveVenues() {
     await Preferences.set({ key: 'venues', value: JSON.stringify(this.venues) });
+    this.venuesChanged.next(); // Notify subscribers of venue change
   }
 
   private async loadApplications() {
@@ -47,7 +53,7 @@ export class TimeshareService {
     this.restrictToAdmin(user);
     const newVenue: TimeshareVenue = {
       id: `venue-${Date.now()}`,
-      ...venue
+      ...venue,
     };
     this.venues.push(newVenue);
     await this.saveVenues();

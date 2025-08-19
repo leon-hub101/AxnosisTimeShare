@@ -12,68 +12,65 @@
   </ion-header>
   <div id="container">
     <h3>Add New Venue</h3>
-    <form *ngIf="venueForm" [formGroup]="venueForm" (ngSubmit)="addVenue()">
-      <ion-input
-        formControlName="name"
-        type="text"
-        placeholder="Enter venue name"
-        label="Name"
-        labelPlacement="floating"
-        fill="outline"
-        [class.invalid]="venueForm.get('name')!.touched && venueForm.get('name')!.invalid"
-      ></ion-input>
-      <ion-input
-        formControlName="location"
-        type="text"
-        placeholder="Enter location"
-        label="Location"
-        labelPlacement="floating"
-        fill="outline"
-        [class.invalid]="venueForm.get('location')!.touched && venueForm.get('location')!.invalid"
-      ></ion-input>
-      <ion-datetime
-        formControlName="availableDates"
-        presentation="date"
-        multiple="true"
-        label="Available Dates"
-        [class.invalid]="venueForm.get('availableDates')!.touched && venueForm.get('availableDates')!.invalid"
-      ></ion-datetime>
-      <ion-label *ngIf="venueForm.get('availableDates')!.touched && venueForm.get('availableDates')!.invalid" class="error-message">
-        Please select at least one valid date.
-      </ion-label>
+    <form [formGroup]="venueForm" (ngSubmit)="addVenue()">
+      <ion-item>
+        <ion-label position="floating">Venue Name</ion-label>
+        <ion-input formControlName="name" type="text"></ion-input>
+      </ion-item>
+      <ion-item *ngIf="venueForm.get('name')!.touched && venueForm.get('name')!.invalid">
+        <ion-label color="danger">Venue name is required.</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Location</ion-label>
+        <ion-input formControlName="location" type="text"></ion-input>
+      </ion-item>
+      <ion-item *ngIf="venueForm.get('location')!.touched && venueForm.get('location')!.invalid">
+        <ion-label color="danger">Location is required.</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Website Link</ion-label>
+        <ion-input formControlName="link" type="url"></ion-input>
+      </ion-item>
+      <ion-item *ngIf="venueForm.get('link')!.touched && venueForm.get('link')!.invalid">
+        <ion-label color="danger">Valid URL is required (e.g., https://example.com).</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Description</ion-label>
+        <ion-input formControlName="description" type="text"></ion-input>
+      </ion-item>
+      <ion-item *ngIf="venueForm.get('description')!.touched && venueForm.get('description')!.invalid">
+        <ion-label color="danger">Description is required (max 200 characters).</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Available Dates</ion-label>
+        <ion-datetime formControlName="availableDates" presentation="date" multiple="true"></ion-datetime>
+      </ion-item>
+      <ion-item *ngIf="venueForm.get('availableDates')!.touched && venueForm.get('availableDates')!.invalid">
+        <ion-label color="danger">At least one date is required.</ion-label>
+      </ion-item>
       <ion-button type="submit" expand="block" [disabled]="venueForm.invalid">Add Venue</ion-button>
     </form>
-    <h3>Update Venue Dates</h3>
-    <form *ngIf="updateForm" [formGroup]="updateForm" (ngSubmit)="updateDates()">
-      <ion-select formControlName="selectedVenueId" placeholder="Select Venue" label="Venue" labelPlacement="floating">
-        <ion-select-option *ngFor="let venue of venues" [value]="venue.id">{{ venue.name }}</ion-select-option>
-      </ion-select>
-      <ion-datetime
-        formControlName="newDates"
-        presentation="date"
-        multiple="true"
-        label="New Dates"
-        [class.invalid]="updateForm.get('newDates')!.touched && updateForm.get('newDates')!.invalid"
-      ></ion-datetime>
-      <ion-label *ngIf="updateForm.get('newDates')!.touched && updateForm.get('newDates')!.invalid" class="error-message">
-        Please select at least one valid date.
-      </ion-label>
-      <ion-button type="submit" expand="block" [disabled]="updateForm.invalid">Update Dates</ion-button>
-    </form>
-    <h3>Venues</h3>
+    <h3>Existing Venues</h3>
     <ion-list>
       <ion-item *ngFor="let venue of venues">
-        <ion-label>
-          <h2>{{ venue.name }} - {{ venue.location }}</h2>
-          <p>Dates: {{ venue.availableDates.join(', ') }}</p>
-        </ion-label>
-        <ion-button slot="end" color="danger" (click)="deleteVenue(venue.id)">Delete</ion-button>
+        <ion-label>{{ venue.name }} - {{ venue.location }}</ion-label>
+        <ion-button
+          slot="end"
+          fill="solid"
+          color="danger"
+          *ngIf="currentUser?.role === 'admin'"
+          (click)="deleteVenue(venue.id)"
+          aria-label="Delete venue"
+          class="delete-button"
+        >
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Delete
+        </ion-button>
       </ion-item>
     </ion-list>
-    <ion-button expand="block" routerLink="/registration">Go to Registration</ion-button>
-    <ion-button expand="block" routerLink="/login">Go to Login</ion-button>
-    <ion-button expand="block" routerLink="/bookings">Go to Bookings</ion-button>
-    <ion-button expand="block" routerLink="/availability">Go to Availability</ion-button>
+  </div>
+  <div id="navigation">
+    <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
     <ion-button expand="block" routerLink="/approvals">Go to Approvals</ion-button>
   </div>
 </ion-content>

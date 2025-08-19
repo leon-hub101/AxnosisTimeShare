@@ -21,12 +21,14 @@ export interface TimeshareVenue {
   name: string;
   location: string;
   availableDates: string[];
+  link: string; 
+  description: string; 
 }
 
 export interface TimeshareSlotApplication {
   id: string;
   userId: string;
   venueId: string;
-  date: string; 
+  date: string;
   status: 'pending' | 'approved' | 'denied';
 }

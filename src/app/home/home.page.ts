@@ -1,10 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonIcon,
   IonContent,
   IonButton,
   IonImg,
@@ -14,6 +18,9 @@ import {
   IonCardSubtitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
+import { TimeshareVenue } from '../models/types';
+import { TimeshareService } from '../services/timeshare.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -26,6 +33,10 @@ import {
     IonHeader,
     IonToolbar,
     IonTitle,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonIcon,
     IonContent,
     IonButton,
     IonImg,
@@ -36,8 +47,30 @@ import {
     IonCardContent,
   ],
 })
-export class HomePage implements OnInit {
-  constructor() {}
+export class HomePage implements OnInit, OnDestroy {
+  venues: TimeshareVenue[] = [];
+  private venuesSubscription!: Subscription;
 
-  ngOnInit() {}
+  constructor(private timeshareService: TimeshareService) {}
+
+  async ngOnInit() {
+    await this.loadVenues();
+    this.venuesSubscription = this.timeshareService.getVenuesChanged().subscribe(() => {
+      this.loadVenues();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.venuesSubscription) {
+      this.venuesSubscription.unsubscribe();
+    }
+  }
+
+  async loadVenues(): Promise<void> {
+    try {
+      this.venues = await this.timeshareService.getVenues();
+    } catch (error) {
+      console.error('Error loading venues:', error);
+    }
+  }
 }

@@ -36,3 +36,25 @@ ion-item {
 .invalid {
   --border-color: red;
 }
+
+/* Ensure floating labels are visible */
+ion-label[position="floating"] {
+  transform: translateY(0);
+  opacity: 1;
+  font-size: 16px;
+  color: var(--ion-color-medium);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Handle hydration issues for ion-select and ion-datetime */
+ion-select:not(.hydrated) + ion-label[position="floating"],
+ion-datetime:not(.hydrated) + ion-label[position="floating"] {
+  display: block !important;
+}
+
+/* Ensure label floats when ion-select or ion-datetime has a value */
+ion-select.ion-touched.ion-dirty + ion-label[position="floating"],
+ion-datetime.ion-touched.ion-dirty + ion-label[position="floating"] {
+  transform: translateY(-100%) scale(0.75);
+  color: var(--ion-color-primary);
+}

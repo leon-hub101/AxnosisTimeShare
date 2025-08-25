@@ -13,7 +13,7 @@ export const routes: Routes = [
     loadComponent: () => import('./login/login.page').then(m => m.LoginPage)
   },
   {
-    path: 'registration',
+    path: 'register',
     loadComponent: () => import('./register/register.page').then(m => m.RegisterPage)
   },
   {
@@ -29,12 +29,8 @@ export const routes: Routes = [
     loadComponent: () => import('./availability/availability.page').then(m => m.AvailabilityPage)
   },
   {
-    path: 'approvals',
-    loadComponent: () => import('./approvals/approvals.page').then(m => m.ApprovalsPage)
-  },
-  {
-    path: 'manage-venues',
-    loadComponent: () => import('./manage-venues/manage-venues.page').then(m => m.ManageVenuesPage)
+    path: 'admin',
+    loadComponent: () => import('./admin/admin.page').then(m => m.AdminPage)
   }
 ];
 

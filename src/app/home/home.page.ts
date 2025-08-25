@@ -18,9 +18,10 @@ import {
   IonCardSubtitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
-import { TimeshareVenue } from '../models/types';
+import { TimeshareVenue, User } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
 import { Subscription } from 'rxjs';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-home',
@@ -49,11 +50,13 @@ import { Subscription } from 'rxjs';
 })
 export class HomePage implements OnInit, OnDestroy {
   venues: TimeshareVenue[] = [];
+  currentUser: User | null = null;
   private venuesSubscription!: Subscription;
 
   constructor(private timeshareService: TimeshareService) {}
 
   async ngOnInit() {
+    await this.loadCurrentUser();
     await this.loadVenues();
     this.venuesSubscription = this.timeshareService.getVenuesChanged().subscribe(() => {
       this.loadVenues();
@@ -64,6 +67,11 @@ export class HomePage implements OnInit, OnDestroy {
     if (this.venuesSubscription) {
       this.venuesSubscription.unsubscribe();
     }
+  }
+
+  async loadCurrentUser(): Promise<void> {
+    const { value } = await Preferences.get({ key: 'currentUser' });
+    this.currentUser = value ? JSON.parse(value) : null;
   }
 
   async loadVenues(): Promise<void> {

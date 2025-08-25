@@ -1,0 +1,126 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-img
+      src="assets/icon/Axnosis.png"
+      alt="Company Logo"
+      slot="start"
+      class="company-logo-header"
+    ></ion-img>
+    <ion-title>Admin Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Admin Dashboard</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div id="container">
+    <h3>Add New Venue</h3>
+    <form [formGroup]="venueForm" (ngSubmit)="addVenue()">
+      <ion-item>
+        <ion-label position="floating">Venue Name</ion-label>
+        <ion-input formControlName="name" type="text"></ion-input>
+      </ion-item>
+      <ion-item
+        *ngIf="venueForm.get('name')!.touched && venueForm.get('name')!.invalid"
+      >
+        <ion-label color="danger">Venue name is required.</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Location</ion-label>
+        <ion-input formControlName="location" type="text"></ion-input>
+      </ion-item>
+      <ion-item
+        *ngIf="venueForm.get('location')!.touched && venueForm.get('location')!.invalid"
+      >
+        <ion-label color="danger">Location is required.</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Website Link</ion-label>
+        <ion-input formControlName="link" type="url"></ion-input>
+      </ion-item>
+      <ion-item
+        *ngIf="venueForm.get('link')!.touched && venueForm.get('link')!.invalid"
+      >
+        <ion-label color="danger"
+          >Valid URL is required (e.g., https://example.com).</ion-label
+        >
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Description</ion-label>
+        <ion-input formControlName="description" type="text"></ion-input>
+      </ion-item>
+      <ion-item
+        *ngIf="venueForm.get('description')!.touched && venueForm.get('description')!.invalid"
+      >
+        <ion-label color="danger"
+          >Description is required (max 200 characters).</ion-label
+        >
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Available Dates</ion-label>
+        <ion-datetime
+          formControlName="availableDates"
+          presentation="date"
+          multiple="true"
+        ></ion-datetime>
+      </ion-item>
+      <ion-item
+        *ngIf="venueForm.get('availableDates')!.touched && venueForm.get('availableDates')!.invalid"
+      >
+        <ion-label color="danger">At least one date is required.</ion-label>
+      </ion-item>
+      <ion-button type="submit" expand="block" [disabled]="venueForm.invalid"
+        >Add Venue</ion-button
+      >
+    </form>
+    <h3>Existing Venues</h3>
+    <ion-list>
+      <ion-item *ngFor="let venue of venues">
+        <ion-label>{{ venue.name }} - {{ venue.location }}</ion-label>
+        <ion-button
+          slot="end"
+          fill="solid"
+          color="danger"
+          (click)="deleteVenue(venue.id)"
+          aria-label="Delete venue"
+          class="delete-button"
+        >
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Delete
+        </ion-button>
+      </ion-item>
+    </ion-list>
+    <h3>Pending Applications</h3>
+    <ion-list>
+      <ion-item *ngFor="let app of applications">
+        <ion-label>
+          {{ app.userId }} - {{ getVenueName(app.venueId) }} - {{ app.date }}
+        </ion-label>
+        <ion-button
+          slot="end"
+          fill="solid"
+          color="success"
+          (click)="updateApplicationStatus(app.id, 'approved')"
+          aria-label="Approve application"
+        >
+          Approve
+        </ion-button>
+        <ion-button
+          slot="end"
+          fill="solid"
+          color="danger"
+          (click)="updateApplicationStatus(app.id, 'denied')"
+          aria-label="Deny application"
+        >
+          Deny
+        </ion-button>
+      </ion-item>
+      <ion-item *ngIf="applications.length === 0">
+        <ion-label>No pending applications.</ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-button expand="block" routerLink="/home">Go to Home</ion-button>
+  </div>
+</ion-content>

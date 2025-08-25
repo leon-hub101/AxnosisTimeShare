@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
 import { TimeshareVenue, User } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-availability',
@@ -31,15 +32,20 @@ import { TimeshareService } from '../services/timeshare.service';
     IonDatetime,
   ],
 })
-export class AvailabilityPage implements OnInit {
+export class AvailabilityPage implements OnInit, OnDestroy {
   availabilityForm!: FormGroup;
   venues: TimeshareVenue[] = [];
+  selectedVenue: TimeshareVenue | null = null;
   currentUser: User | null = null;
+  today: string = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD
+  private venuesSubscription!: Subscription;
+  private queryParamsSubscription!: Subscription;
 
   constructor(
     private router: Router,
     private toastController: ToastController,
-    private timeshareService: TimeshareService
+    private timeshareService: TimeshareService,
+    private route: ActivatedRoute
   ) {}
 
   async ngOnInit() {
@@ -50,6 +56,28 @@ export class AvailabilityPage implements OnInit {
 
     await this.loadCurrentUser();
     await this.loadVenues();
+
+    // Subscribe to venue changes
+    this.venuesSubscription = this.timeshareService.getVenuesChanged().subscribe(() => {
+      this.loadVenues();
+    });
+
+    // Check for venueId query parameter
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+      const venueId = params['venueId'];
+      if (venueId) {
+        this.selectVenue(venueId);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.venuesSubscription) {
+      this.venuesSubscription.unsubscribe();
+    }
+    if (this.queryParamsSubscription) {
+      this.queryParamsSubscription.unsubscribe();
+    }
   }
 
   async loadCurrentUser(): Promise<void> {
@@ -60,9 +88,19 @@ export class AvailabilityPage implements OnInit {
   async loadVenues(): Promise<void> {
     try {
       this.venues = await this.timeshareService.getVenues();
+      // Update selectedVenue if it still exists
+      if (this.selectedVenue) {
+        this.selectedVenue = this.venues.find(v => v.id === this.selectedVenue?.id) || null;
+        this.availabilityForm.patchValue({ venueId: this.selectedVenue?.id || '' });
+      }
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
+  }
+
+  selectVenue(venueId: string) {
+    this.selectedVenue = this.venues.find(v => v.id === venueId) || null;
+    this.availabilityForm.patchValue({ venueId: this.selectedVenue?.id || '' });
   }
 
   async bookSelectedDates() {

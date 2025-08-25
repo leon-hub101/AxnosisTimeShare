@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonImg, IonButton, IonList, IonItem, IonLabel, IonInput, IonDatetime, IonIcon, ToastController } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonIcon, IonToolbar, IonImg, IonButton, IonList, IonItem, IonLabel, IonInput, IonDatetime, ToastController } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
-import { TimeshareVenue, User, AdminUser } from '../models/types';
+import { TimeshareVenue, User, AdminUser, TimeshareSlotApplication } from '../models/types';
 import { TimeshareService } from '../services/timeshare.service';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-manage-venues',
-  templateUrl: './manage-venues.page.html',
-  styleUrls: ['./manage-venues.page.scss'],
+  selector: 'app-admin',
+  templateUrl: './admin.page.html',
+  styleUrls: ['./admin.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -20,6 +21,7 @@ import { TimeshareService } from '../services/timeshare.service';
     IonContent,
     IonHeader,
     IonTitle,
+    IonIcon,
     IonToolbar,
     IonImg,
     IonButton,
@@ -28,13 +30,14 @@ import { TimeshareService } from '../services/timeshare.service';
     IonLabel,
     IonInput,
     IonDatetime,
-    IonIcon,
   ],
 })
-export class ManageVenuesPage implements OnInit {
+export class AdminPage implements OnInit, OnDestroy {
   venueForm!: FormGroup;
   venues: TimeshareVenue[] = [];
+  applications: TimeshareSlotApplication[] = [];
   currentUser: User | null = null;
+  private venuesSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -52,7 +55,23 @@ export class ManageVenuesPage implements OnInit {
     });
 
     await this.loadCurrentUser();
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      await this.presentToast('Only admins can access this page.');
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+
     await this.loadVenues();
+    await this.loadApplications();
+    this.venuesSubscription = this.timeshareService.getVenuesChanged().subscribe(() => {
+      this.loadVenues();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.venuesSubscription) {
+      this.venuesSubscription.unsubscribe();
+    }
   }
 
   async loadCurrentUser(): Promise<void> {
@@ -66,6 +85,19 @@ export class ManageVenuesPage implements OnInit {
     } catch (error) {
       await this.presentToast('Error loading venues.');
     }
+  }
+
+  async loadApplications(): Promise<void> {
+    try {
+      this.applications = await this.timeshareService.getPendingApplications();
+    } catch (error) {
+      await this.presentToast('Error loading applications.');
+    }
+  }
+
+  getVenueName(venueId: string): string {
+    const venue = this.venues.find(v => v.id === venueId);
+    return venue ? `${venue.name} - ${venue.location}` : 'Unknown Venue';
   }
 
   async addVenue() {
@@ -114,6 +146,22 @@ export class ManageVenuesPage implements OnInit {
       await this.presentToast('Venue deleted successfully.');
     } catch (error: any) {
       await this.presentToast(error.message || 'Error deleting venue.');
+    }
+  }
+
+  async updateApplicationStatus(applicationId: string, status: 'approved' | 'denied') {
+    if (!this.currentUser || this.currentUser.role !== 'admin') {
+      await this.presentToast('Only admins can update applications.');
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+
+    try {
+      await this.timeshareService.updateApplicationStatus(this.currentUser as AdminUser, applicationId, status);
+      this.applications = this.applications.filter(app => app.id !== applicationId);
+      await this.presentToast(`Application ${status} successfully.`);
+    } catch (error: any) {
+      await this.presentToast(error.message || 'Error updating application.');
     }
   }
 

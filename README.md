@@ -49,8 +49,10 @@ AxnosisTimeShare is a timeshare venue management application built with Ionic 8 
    - **Email**: `John.Doe@example`
    - Set these in the app via the `/login` page or manually in `Preferences`:
      ```bash
-     node -e "require('@capacitor/preferences').Preferences.set({ key: 'currentUser', value: JSON.stringify({ email: 'John.Doe@example', role: 'admin' }) }).then(() => console.log('Admin user set'))". Note that the role based functionality still needs work across the application, but the John Doe login will give admin access. 
+     node -e "require('@capacitor/preferences').Preferences.set({ key: 'currentUser', value: JSON.stringify({ email: 'John.Doe@example', role: 'admin' }) }).then(() => console.log('Admin user set'))". 
      ```
+     Note that the role based functionality still needs work across the application, but the John Doe login will give admin access. 
+     
 5. **Run Locally**:
    ```bash
    npm run ionic:build && npm run ionic:serve

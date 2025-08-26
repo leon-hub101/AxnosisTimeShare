@@ -1,157 +1,154 @@
-AxnosisTimeShare
+I understand you want the entire `README.md` file for your `AxnosisTimeShare` application presented inline in the chat, using the exact Markdown syntax and formatting style as the provided section (August 26, 2025, 11:46 AM SAST). Specifically, you want all sections, including **Setup Instructions**, **Project Structure**, **Contributing**, **Debugging Tips**, **Future Enhancements**, **License**, and **Contact**, to match the formatting of the provided excerpt, where:
+- Headers use `#` and `##` with no extra spaces before them.
+- Lists use `-` for bullets, with a single space after the dash.
+- Code blocks use triple backticks (`````bash`) with `bash` as the language identifier.
+- Numbered lists in **Setup Instructions** and **Contributing** have no blank lines between steps (e.g., `1. ...2. ...3.`).
+- Sub-bullets under numbered items (e.g., admin login credentials) use `-` with a single space, indented with two spaces.
+- Single blank lines separate major sections (e.g., between `## Features` and `## Recent Updates`).
+- The provided section (up to `cd axnosis-timeshare`) is correct, but the remaining content (from **Install Dependencies** onward) should be reformatted to match this style, removing extra line breaks in **Setup Instructions** and ensuring consistent Markdown syntax throughout.
+
+The content will be identical to the previous version (August 26, 2025, 11:44 AM SAST), including the `John.Doe@example` admin login details, but with all sections reformatted to match the provided excerpt’s style. This should also address the rendering issue (August 26, 2025, 11:36 AM SAST) by ensuring clean Markdown syntax, UTF-8 encoding, and LF line endings.
+
+```markdown
+# AxnosisTimeShare
+
 AxnosisTimeShare is a timeshare venue management application built with Ionic 8 and Angular 20, using a fully standalone components architecture. Users can browse venues, check availability, book dates, and manage venues/applications (admin-only). The app features a responsive UI, role-based access, and dynamic updates for venue and booking management.
-Features
 
-Venue Management: Admins can add/delete venues with name, location, website link, description, and available dates.
-Availability Checking: Users can select venues and view/book available dates, with preselected venues from the home page.
-Role-Based Access: Admin-only access to the admin dashboard; viewer users can browse and book.
-Dynamic Updates: Real-time venue and booking updates with toast notifications.
-Responsive UI: Consistent logo (70px), floating labels, and centered layout (max-width 400px).
-Standalone Architecture: Fully standalone Angular components with lazy-loaded routes for optimal performance.
+## Features
+- **Venue Management**: Admins can add/delete venues with name, location, website link, description, and available dates.
+- **Availability Checking**: Users can select venues and view/book available dates, with preselected venues from the home page.
+- **Role-Based Access**: Admin-only access to the admin dashboard; viewer users can browse and book.
+- **Dynamic Updates**: Real-time venue and booking updates with toast notifications.
+- **Responsive UI**: Consistent logo (70px), floating labels, and centered layout (max-width 400px).
+- **Standalone Architecture**: Fully standalone Angular components with lazy-loaded routes for optimal performance.
 
-Recent Updates (August 2025)
+## Recent Updates (August 2025)
+- Added website link and description to `TimeshareVenue`.
+- Enabled admin venue add/delete with visible delete buttons.
+- Added preselected venue and available dates display on the availability page.
+- Removed default venues for an empty initial state.
+- Consolidated `manage-venues` and `approvals` into a single `admin` page.
+- Replaced manage-venues/approvals buttons with an admin-only button on the home page, preserving logo and login/registration buttons.
+- Transitioned from module-based routing (`app.routes.ts`) to a fully standalone `routes.ts`.
+- Fixed floating label visibility on the availability page for consistent UI with the admin page.
+- Resolved unused imports in `admin.page.ts` and form name errors in `availability.page.html`.
+- Standardized logo size (70px) across home and availability pages.
 
-Added website link and description to TimeshareVenue.
-Enabled admin venue add/delete with visible delete buttons.
-Added preselected venue and available dates display on the availability page.
-Removed default venues for an empty initial state.
-Consolidated manage-venues and approvals into a single admin page.
-Replaced manage-venues/approvals buttons with an admin-only button on the home page, preserving logo and login/registration buttons.
-Transitioned from module-based routing (app.routes.ts) to a fully standalone routes.ts.
-Fixed floating label visibility on the availability page for consistent UI with the admin page.
-Resolved unused imports in admin.page.ts and form name errors in availability.page.html.
-Standardized logo size (70px) across home and availability pages.
+## Prerequisites
+- **Node.js**: v18.x or later
+- **npm**: v9.x or later
+- **Ionic CLI**: `npm install -g @ionic/cli`
+- **Angular CLI**: `npm install -g @angular/cli`
+- **Git**: For cloning the repository
 
-Prerequisites
+## Setup Instructions
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-username/axnosis-timeshare.git
+   cd axnosis-timeshare
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Clear Preferences (Optional)**:
+   To start with an empty venue list:
+   ```bash
+   node -e "require('@capacitor/preferences').Preferences.remove({ key: 'venues' }).then(() => console.log('Venues cleared'))"
+   ```
+4. **Set Up Admin Login**:
+   To test admin functionality, log in with the following credentials:
+   - **Email**: `John.Doe@example`
+   - Set these in the app via the `/login` page or manually in `Preferences`:
+     ```bash
+     node -e "require('@capacitor/preferences').Preferences.set({ key: 'currentUser', value: JSON.stringify({ email: 'John.Doe@example', role: 'admin' }) }).then(() => console.log('Admin user set'))". Note that the role based functionality still needs work across the application, but the John Doe login will give admin access. 
+     ```
+5. **Run Locally**:
+   ```bash
+   npm run ionic:build && npm run ionic:serve
+   ```
+   Open `http://localhost:8100` in your browser.
+6. **Run on Native (iOS/Android)**:
+   ```bash
+   npx cap sync
+   npx cap run ios
+   # or
+   npx cap run android
+   ```
 
-Node.js: v18.x or later
-npm: v9.x or later
-Ionic CLI: npm install -g @ionic/cli
-Angular CLI: npm install -g @angular/cli
-Git: For cloning the repository
+## Project Structure
+- `src/app/routes.ts`: Defines lazy-loaded routes for `home`, `login`, `register`, `bookings`, `availability`, and `admin`.
+- `src/app/main.ts`: Bootstraps the standalone `AppComponent` with `provideIonicAngular` and `provideRouter`.
+- `src/app/home/`: Home page with venue grid, admin-only button, and login/registration navigation.
+- `src/app/availability/`: Availability page with venue selection and date booking.
+- `src/app/admin/`: Admin dashboard for managing venues and approving/denying bookings.
+- `src/app/services/timeshare.service.ts`: Handles venue and booking logic with Capacitor Preferences.
+- `src/app/models/types.ts`: Defines `TimeshareVenue`, `User`, `AdminUser`, and `TimeshareSlotApplication` interfaces.
 
-Setup Instructions
+## Contributing
+1. **Fork the Repository**:
+   - Fork `https://github.com/your-username/axnosis-timeshare` on GitHub.
+   - Clone your fork:
+     ```bash
+     git clone https://github.com/your-username/axnosis-timeshare.git
+     cd axnosis-timeshare
+     ```
+2. **Create a Feature Branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Follow Coding Guidelines**:
+   - Use **standalone components** (`standalone: true`) for new components.
+   - Import dependencies directly in components (e.g., `CommonModule`, `IonContent`).
+   - Maintain consistent styling (`max-width: 400px`, floating labels, 70px logo).
+   - Add unit tests in `*.spec.ts` files using Angular’s testing framework.
+   - Update `routes.ts` for new routes, using lazy loading (`loadComponent`).
+4. **Test Your Changes**:
+   - Run locally:
+     ```bash
+     npm run ionic:build && npm run ionic:serve
+     ```
+   - Test navigation (`/home`, `/availability`, `/admin`, etc.).
+   - Verify floating labels, toasts, and dynamic updates (e.g., venue add/delete).
+   - For admin features, test with the `John.Doe@example` admin account (`role: 'admin'`).
+5. **Commit Changes**:
+   - Use clear commit messages:
+     ```bash
+     git commit -m "Add feature: describe your changes concisely"
+     ```
+   - Example: `Add feature: implement ion-alert for venue delete confirmation`.
+6. **Push and Create Pull Request**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+   - Open a pull request on GitHub, describing your changes and referencing related issues.
+7. **Code Review**:
+   - Address feedback from maintainers.
+   - Ensure no build errors (`ng build`) and all tests pass (`ng test`).
 
-Clone the Repository:
-git clone https://github.com/your-username/axnosis-timeshare.git
-cd axnosis-timeshare
+## Debugging Tips
+- **Routing Issues**: Add `console.log('Routes loaded:', routes)` in `routes.ts` and check the console (F12).
+- **Label Visibility**: Inspect `<ion-label position="floating">` in dev tools for `display: none` or `opacity: 0`.
+- **Preferences**: Check stored data:
+  ```bash
+  node -e "require('@capacitor/preferences').Preferences.get({ key: 'venues' }).then(console.log)"
+  ```
+  Or verify admin user:
+  ```bash
+  node -e "require('@capacitor/preferences').Preferences.get({ key: 'currentUser' }).then(console.log)"
+  ```
+- **Build Errors**: Run `ng build` and inspect console output.
 
+## Future Enhancements
+- Add `<ion-alert>` for delete confirmation on the admin page.
+- Implement placeholders for empty venues/applications.
+- Add unit tests for services and components.
+- Support dark mode with Ionic theming.
+- Enhance accessibility (e.g., ARIA labels for forms).
 
-Install Dependencies:
-npm install
+## License
+MIT License. See `LICENSE` for details.
 
-
-Clear Preferences (Optional):To start with an empty venue list:
-node -e "require('@capacitor/preferences').Preferences.remove({ key: 'venues' }).then(() => console.log('Venues cleared'))"
-
-
-Set Up Admin Login:To test admin functionality, log in with the following credentials:
-
-Email: John.Doe@example
-Set this in the app via the /login page or manually in Preferences:node -e "require('@capacitor/preferences').Preferences.set({ key: 'currentUser', value: JSON.stringify({ email: 'John.Doe@example', role: 'admin' }) }).then(() => console.log('Admin user set'))". Note that the role based functionality still needs work across the application, but the John Doe login will give admin access. 
-
-
-
-
-Run Locally:
-npm run ionic:build && npm run ionic:serve
-
-Open http://localhost:8100 in your browser.
-
-Run on Native (iOS/Android):
-npx cap sync
-npx cap run ios
-# or
-npx cap run android
-
-
-
-Project Structure
-
-src/app/routes.ts: Defines lazy-loaded routes 
-
-System: home, login, register, bookings, availability, and admin.
-
-src/app/main.ts: Bootstraps the standalone AppComponent with provideIonicAngular and provideRouter.
-src/app/home/: Home page with venue grid, admin-only button, and login/registration navigation.
-src/app/availability/: Availability page with venue selection and date booking.
-src/app/admin/: Admin dashboard for managing venues and approving/denying bookings.
-src/app/services/timeshare.service.ts: Handles venue and booking logic with Capacitor Preferences.
-src/app/models/types.ts: Defines TimeshareVenue, User, AdminUser, and TimeshareSlotApplication interfaces.
-
-Contributing
-We welcome contributions to enhance AxnosisTimeShare! Follow these steps to contribute:
-
-Fork the Repository:
-
-Fork https://github.com/your-username/axnosis-timeshare on GitHub.
-Clone your fork:git clone https://github.com/your-username/axnosis-timeshare.git
-cd axnosis-timeshare
-
-
-
-
-** DCA **:
-
-Use standalone components (standalone: true) for new components.
-Import dependencies directly in components (e.g., CommonModule, IonContent).
-Maintain consistent styling (max-width: 400px, floating labels, 70px logo).
-Add unit tests in *.spec.ts files using Angular’s testing framework.
-Update routes.ts for new routes, using lazy loading (loadComponent).
-
-
-Test Your Changes:
-
-Run locally:npm run ionic:build && npm run ionic:serve
-
-
-Test navigation (/home, /availability, /admin, etc.).
-Verify floating labels, toasts, and dynamic updates (e.g., venue add/delete).
-For admin features, test with the John.Doe@example admin account (role: 'admin').
-
-
-Commit Changes:
-
-Use clear commit messages:git commit -m "Add feature: describe your changes concisely"
-
-
-Example: Add feature: implement ion-alert for venue delete confirmation.
-
-
-Push and Create Pull Request:
-git push origin feature/your-feature-name
-
-
-Open a pull request on GitHub, describing your changes and referencing related issues.
-
-
-Code Review:
-
-Address feedback from maintainers.
-Ensure no build errors (ng build) and all tests pass (ng test).
-
-
-
-Debugging Tips
-
-Routing Issues: Add console.log('Routes loaded:', routes) in routes.ts and check the console (F12).
-Label Visibility: Inspect <ion-label position="floating"> in dev tools for display: none or opacity: 0.
-Preferences: Check stored data:node -e "require('@capacitor/preferences').Preferences.get({ key: 'venues' }).then(console.log)"
-
-Or verify admin user:node -e "require('@capacitor/preferences').Preferences.get({ key: 'currentUser' }).then(console.log)"
-
-
-Build Errors: Run ng build and inspect console output.
-
-Future Enhancements
-
-Add <ion-alert> for delete confirmation on the admin page.
-Implement placeholders for empty venues/applications.
-Add unit tests for services and components.
-Support dark mode with Ionic theming.
-Enhance accessibility (e.g., ARIA labels for forms).
-
-License
-MIT License. See LICENSE for details.
-Contact
+## Contact
 For questions or suggestions, open an issue on GitHub or contact [Leon.Pretorius@Axnosis.com].
+```

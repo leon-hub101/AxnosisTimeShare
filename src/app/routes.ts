@@ -1,6 +1,4 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -33,9 +31,3 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/admin.page').then(m => m.AdminPage)
   }
 ];
-
-@NgModule({
-  imports: [IonicModule, RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule {}

@@ -1,15 +1,3 @@
-I understand you want the entire `README.md` file for your `AxnosisTimeShare` application presented inline in the chat, using the exact Markdown syntax and formatting style as the provided section (August 26, 2025, 11:46 AM SAST). Specifically, you want all sections, including **Setup Instructions**, **Project Structure**, **Contributing**, **Debugging Tips**, **Future Enhancements**, **License**, and **Contact**, to match the formatting of the provided excerpt, where:
-- Headers use `#` and `##` with no extra spaces before them.
-- Lists use `-` for bullets, with a single space after the dash.
-- Code blocks use triple backticks (`````bash`) with `bash` as the language identifier.
-- Numbered lists in **Setup Instructions** and **Contributing** have no blank lines between steps (e.g., `1. ...2. ...3.`).
-- Sub-bullets under numbered items (e.g., admin login credentials) use `-` with a single space, indented with two spaces.
-- Single blank lines separate major sections (e.g., between `## Features` and `## Recent Updates`).
-- The provided section (up to `cd axnosis-timeshare`) is correct, but the remaining content (from **Install Dependencies** onward) should be reformatted to match this style, removing extra line breaks in **Setup Instructions** and ensuring consistent Markdown syntax throughout.
-
-The content will be identical to the previous version (August 26, 2025, 11:44 AM SAST), including the `John.Doe@example` admin login details, but with all sections reformatted to match the provided excerpt’s style. This should also address the rendering issue (August 26, 2025, 11:36 AM SAST) by ensuring clean Markdown syntax, UTF-8 encoding, and LF line endings.
-
-```markdown
 # AxnosisTimeShare
 
 AxnosisTimeShare is a timeshare venue management application built with Ionic 8 and Angular 20, using a fully standalone components architecture. Users can browse venues, check availability, book dates, and manage venues/applications (admin-only). The app features a responsive UI, role-based access, and dynamic updates for venue and booking management.
